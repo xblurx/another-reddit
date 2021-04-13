@@ -1,9 +1,9 @@
-import { Post } from './entities/Post';
+import { Post, User } from './entities/';
 import { Options } from '@mikro-orm/core';
 import path from 'path';
 
 const config: Options = {
-    entities: [Post],
+    entities: [Post, User],
     dbName: 'reddit',
     type: 'postgresql',
     debug: process.env.NODE_ENV !== 'production',
