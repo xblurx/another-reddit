@@ -1,12 +1,13 @@
 import { Post, User } from './entities/';
 import { Options } from '@mikro-orm/core';
 import path from 'path';
+import { __prod__ } from "./consts";
 
 const config: Options = {
     entities: [Post, User],
     dbName: 'reddit',
     type: 'postgresql',
-    debug: process.env.NODE_ENV !== 'production',
+    debug: !__prod__,
     user: 'postgres',
     password: 'postgres',
     migrations: {
