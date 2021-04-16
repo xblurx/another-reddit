@@ -40,7 +40,7 @@ export class UserResolver {
     @Mutation(() => UserResponse)
     async register(
         @Arg('options') options: UsernamePasswordInput,
-        @Ctx() { em }: MyContext
+        @Ctx() { req, em }: MyContext
     ): Promise<UserResponse> {
         const hashedPassword = await argon2.hash(options.password);
         const user = em.create(User, {
@@ -59,6 +59,8 @@ export class UserResolver {
                 ],
             };
         }
+
+        req.session.userId = user.id;
         return {
             user,
         };
@@ -83,8 +85,11 @@ export class UserResolver {
             };
         }
 
-        const verifyPw = await argon2.verify(user.password, options.password);
-        if (!verifyPw) {
+        const passwordsMatch = await argon2.verify(
+            user.password,
+            options.password
+        );
+        if (!passwordsMatch) {
             return {
                 errors: [
                     {
@@ -94,7 +99,9 @@ export class UserResolver {
                 ],
             };
         }
+
         req.session.userId = user.id;
+        console.log(`req.session: ${JSON.stringify(req.session, null, '\t')}`);
         return {
             user,
         };
