@@ -101,7 +101,6 @@ export class UserResolver {
         }
 
         req.session.userId = user.id;
-        console.log(`req.session: ${JSON.stringify(req.session, null, '\t')}`);
         return {
             user,
         };
