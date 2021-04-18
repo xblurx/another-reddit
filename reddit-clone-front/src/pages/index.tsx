@@ -1,6 +1,5 @@
 import React from "react";
-import Register from "./register";
 
-const Index = () => <Register />;
+const Index = () => <div> hello world</div>;
 
 export default Index;

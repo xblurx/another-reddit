@@ -3,6 +3,7 @@ import { MikroORM } from '@mikro-orm/core';
 import microConf from './mikro-orm.config';
 import express from 'express';
 import session from 'express-session';
+import cors from 'cors';
 import redis from 'redis';
 import connectRedis from 'connect-redis';
 import { ApolloServer } from 'apollo-server-express';
@@ -16,10 +17,16 @@ const main = async () => {
     await orm.getMigrator().up();
 
     const app = express();
-    app.disable('x-powered-by');
 
     const RedisStore = connectRedis(session);
     const redisClient = redis.createClient();
+
+    app.use(
+        cors({
+            origin: 'http://localhost:3000',
+            credentials: true,
+        })
+    );
     app.use(
         session({
             name: 'qid',
@@ -38,6 +45,7 @@ const main = async () => {
             saveUninitialized: false,
         })
     );
+    app.disable('x-powered-by');
 
     const apolloServer = new ApolloServer({
         schema: await buildSchema({
@@ -50,7 +58,7 @@ const main = async () => {
             req,
         }),
     });
-    apolloServer.applyMiddleware({ app });
+    apolloServer.applyMiddleware({ app, cors: false });
     app.listen(2000, () => {
         console.log('server started on localhost:2000');
     });

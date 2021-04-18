@@ -1,25 +1,34 @@
 import React from 'react';
-import { useMutation } from 'urql';
+import { useForm } from 'react-hook-form';
+import { useRouter } from 'next/router';
 import { Button, Stack, VStack } from '@chakra-ui/react';
 import { iRegister } from '../types';
 import { Wrapper } from '../components/Wrapper';
 import { InputField } from '../components/InputField';
-import { REGISTER_MUT } from '../graphql/mutations';
-import { useForm } from 'react-hook-form';
+import { useRegisterMutation } from '../generated/graphql';
 
 interface RegisterProps {}
 
 const Register = (props: RegisterProps) => {
-    const [, register] = useMutation(REGISTER_MUT);
+    const router = useRouter();
+    const [, register] = useRegisterMutation();
     const {
         register: reg,
         handleSubmit,
+        setError,
         formState: { errors, isSubmitting },
     } = useForm<iRegister>();
 
-    const onSubmit = handleSubmit((data) => {
-        console.log(data);
-        register(data);
+    const onSubmit = handleSubmit(async (formData) => {
+        const response = await register(formData);
+        if (response.data?.register.errors) {
+            const errors = response.data.register.errors;
+            errors.forEach(({ field: name, message }) => {
+                setError(name as 'username' | 'password', { message });
+            });
+            return;
+        }
+        router.push('/');
     });
 
     return (
