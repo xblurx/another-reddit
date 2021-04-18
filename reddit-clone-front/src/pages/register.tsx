@@ -1,58 +1,63 @@
-import { Button, Stack, useToast, VStack } from "@chakra-ui/react";
-import React from "react";
-import { iRegister } from "../types";
-import { useFormLogic } from "../utils/hooks";
-import { Wrapper } from "../components/Wrapper";
-import { InputField } from "../components/InputField";
+import React from 'react';
+import { useMutation } from 'urql';
+import { Button, Stack, VStack } from '@chakra-ui/react';
+import { iRegister } from '../types';
+import { Wrapper } from '../components/Wrapper';
+import { InputField } from '../components/InputField';
+import { REGISTER_MUT } from '../graphql/mutations';
+import { useForm } from 'react-hook-form';
 
 interface RegisterProps {}
 
 const Register = (props: RegisterProps) => {
-  const {
-    formData,
-    onSubmit,
-    errors,
-    register,
-    isSubmitting,
-  } = useFormLogic<iRegister>();
-  const toast = useToast();
+    const [, register] = useMutation(REGISTER_MUT);
+    const {
+        register: reg,
+        handleSubmit,
+        formState: { errors, isSubmitting },
+    } = useForm<iRegister>();
 
-  return (
-    <Wrapper variant='small'>
-      <form onSubmit={onSubmit}>
-        <VStack mt={5} spacing={10}>
-          <InputField
-            errors={errors.username}
-            register={register("username", { required: true })}
-            name="username"
-            placeholder="username"
-          />
+    const onSubmit = handleSubmit((data) => {
+        console.log(data);
+        register(data);
+    });
 
-          <InputField
-            errors={errors.password}
-            register={register("password", { required: true })}
-            name="password"
-            placeholder="Password"
-            type="password"
-          />
+    return (
+        <Wrapper variant="small">
+            <form onSubmit={onSubmit}>
+                <VStack mt={5} spacing={10}>
+                    <InputField
+                        errors={errors.username}
+                        register={reg('username', { required: true })}
+                        name="username"
+                        placeholder="username"
+                    />
 
-          <Stack mt={5} direction="row" spacing={4}>
-            <Button
-              isLoading={isSubmitting}
-              loadingText="Submitting..."
-              colorScheme="purple"
-              variant="outline"
-              type="submit"
-              borderRadius="50px"
-              width='150px'
-            >
-              Register
-            </Button>
-          </Stack>
-        </VStack>
-      </form>
-    </Wrapper>
-  );
+                    <InputField
+                        errors={errors.password}
+                        register={reg('password', { required: true })}
+                        name="password"
+                        placeholder="Password"
+                        type="password"
+                    />
+
+                    <Stack mt={5} direction="row" spacing={4}>
+                        <Button
+                            isLoading={isSubmitting}
+                            loadingText="Submitting..."
+                            colorScheme="purple"
+                            variant="outline"
+                            type="submit"
+                            borderRadius="50px"
+                            width="150px"
+                        >
+                            Register
+                        </Button>
+                    </Stack>
+                </VStack>
+            </form>
+        </Wrapper>
+    );
 };
 
 export default Register;

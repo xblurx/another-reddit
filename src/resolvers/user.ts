@@ -6,13 +6,15 @@ import {
     InputType,
     Mutation,
     ObjectType,
+    Query,
     Resolver,
 } from 'type-graphql';
 import { User } from '../entities';
 import argon2 from 'argon2';
+import { validateRegister } from '../utils/validateRegister';
 
 @InputType()
-class UsernamePasswordInput {
+export class UsernamePasswordInput {
     @Field()
     username: string;
     @Field()
@@ -20,7 +22,7 @@ class UsernamePasswordInput {
 }
 
 @ObjectType()
-class FieldError {
+export class FieldError {
     @Field()
     field: string;
     @Field()
@@ -37,11 +39,19 @@ class UserResponse {
 
 @Resolver()
 export class UserResolver {
+    @Query(() => [User], { nullable: true })
+    users(@Ctx() { em }: MyContext): Promise<User[]> {
+        return em.find(User, {});
+    }
+
     @Mutation(() => UserResponse)
     async register(
         @Arg('options') options: UsernamePasswordInput,
         @Ctx() { req, em }: MyContext
     ): Promise<UserResponse> {
+        const errors = validateRegister(options);
+        if (errors) return { errors };
+
         const hashedPassword = await argon2.hash(options.password);
         const user = em.create(User, {
             username: options.username,
