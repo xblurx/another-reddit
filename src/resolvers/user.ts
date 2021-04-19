@@ -1,17 +1,8 @@
-import { MyContext } from 'src/types';
-import {
-    Arg,
-    Ctx,
-    Field,
-    InputType,
-    Mutation,
-    ObjectType,
-    Query,
-    Resolver,
-} from 'type-graphql';
-import { User } from '../entities';
-import argon2 from 'argon2';
-import { validateRegister } from '../utils/validateRegister';
+import argon2 from "argon2";
+import { Arg, Ctx, Field, InputType, Mutation, ObjectType, Query, Resolver } from "type-graphql";
+import { MyContext } from "src/types";
+import { User } from "../entities";
+import { validateRegister } from "../utils/validateRegister";
 
 @InputType()
 export class UsernamePasswordInput {
@@ -114,5 +105,14 @@ export class UserResolver {
         return {
             user,
         };
+    }
+
+    @Query(() => User, { nullable: true })
+    async me(@Ctx() { em, req }: MyContext): Promise<User | null> {
+        const user = await em.findOne(User, { id: req.session.userId });
+        if (user) {
+            return user;
+        }
+        return null;
     }
 }
