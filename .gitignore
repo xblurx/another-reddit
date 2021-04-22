@@ -28,5 +28,5 @@ yarn-error.log*
 # Local Netlify folder
 .netlify
 
-reddit-clone-front/node_modules
-reddit-clone-front/.next
+frontend/node_modules
+frontend/.next
