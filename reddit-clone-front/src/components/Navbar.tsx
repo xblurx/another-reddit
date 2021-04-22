@@ -15,8 +15,6 @@ const Navbar = () => {
     const [{ data }] = useMeQuery();
     let body = null;
 
-    console.log(data?.me);
-
     if (!data?.me) {
         body = (
             <>
@@ -26,14 +24,21 @@ const Navbar = () => {
                     </Link>
                 </Box>
                 <NextLink href="/register">
-                    <Button colorScheme="pink" as="a" size="sm">
+                    <Button colorScheme="pink" variant="link">
                         Sign Up
                     </Button>
                 </NextLink>
             </>
         );
     } else {
-        body = <Text>Hello, {data.me.username}</Text>;
+        body = (
+            <Flex>
+                <Text mr={5}>Hello, {data.me.username}</Text>
+                <Button colorScheme="pink" variant="link">
+                    Log out
+                </Button>
+            </Flex>
+        );
     }
 
     return (
@@ -47,7 +52,9 @@ const Navbar = () => {
                     </Heading>
                 </Box>
                 <Spacer />
-                <Flex align="baseline">{body}</Flex>
+                <Flex align="baseline" justify="space-between">
+                    {body}
+                </Flex>
             </Flex>
         </>
     );

@@ -5,8 +5,9 @@
     "main": "index.js",
     "scripts": {
         "start": "node dist/index.js",
-        "dev": "nodemon dist/index.js",
+        "nodemon": "nodemon dist/index.js",
         "watch": "tsc -w",
+        "dev": "concurrently --kill-others \"npm run nodemon\" \"npm run watch\"",
         "migrate": "mikro-orm migration:create",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
@@ -27,6 +28,7 @@
         "@mikro-orm/cli": "^4.5.3",
         "@mikro-orm/core": "^4.5.3",
         "@mikro-orm/postgresql": "^4.5.3",
+        "@urql/exchange-graphcache": "^4.0.0",
         "apollo-server-express": "^2.22.2",
         "argon2": "^0.27.2",
         "connect-redis": "^5.1.0",

@@ -2,9 +2,8 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/router';
 import { Button, Stack, VStack } from '@chakra-ui/react';
+import { Wrapper, InputField } from 'components';
 import { iRegister } from '../types';
-import { Wrapper } from '../components/Wrapper';
-import { InputField } from '../components/InputField';
 import { useLoginMutation } from '../generated/graphql';
 
 interface RegisterProps {}
@@ -28,7 +27,7 @@ const Login = (props: RegisterProps) => {
             });
             return;
         }
-        router.push('/');
+        await router.push('/');
     });
 
     return (
