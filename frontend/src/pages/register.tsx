@@ -1,11 +1,13 @@
-import React from 'react';
-import { useForm } from 'react-hook-form';
-import { useRouter } from 'next/router';
-import { Button, Stack, VStack } from '@chakra-ui/react';
-import { iRegister } from '../types';
-import { Wrapper } from '../components/Wrapper';
-import { InputField } from '../components/InputField';
-import { useRegisterMutation } from '../generated/graphql';
+import React from "react";
+import { useForm } from "react-hook-form";
+import { useRouter } from "next/router";
+import { Button, Stack, VStack } from "@chakra-ui/react";
+import { iRegister } from "../types";
+import { Wrapper } from "../components/Wrapper";
+import { InputField } from "../components/InputField";
+import { useRegisterMutation } from "../generated/graphql";
+import { createUrqlClient } from "../utils/createUrqlClient";
+import { withUrqlClient } from "next-urql";
 
 interface RegisterProps {}
 
@@ -69,4 +71,4 @@ const Register = (props: RegisterProps) => {
     );
 };
 
-export default Register;
+export default withUrqlClient(createUrqlClient)(Register);

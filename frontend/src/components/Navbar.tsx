@@ -9,10 +9,14 @@ import {
     Spacer,
     Text,
 } from '@chakra-ui/react';
-import { useMeQuery } from '../generated/graphql';
+import { useLogoutMutation, useMeQuery } from '../generated/graphql';
+import { isServer } from '../utils/isServer';
 
 const Navbar = () => {
-    const [{ data }] = useMeQuery();
+    const [{ data }] = useMeQuery({
+        pause: isServer(),
+    });
+    const [{ fetching }, logout] = useLogoutMutation();
     let body = null;
 
     if (!data?.me) {
@@ -34,7 +38,12 @@ const Navbar = () => {
         body = (
             <Flex>
                 <Text mr={5}>Hello, {data.me.username}</Text>
-                <Button colorScheme="pink" variant="link">
+                <Button
+                    onClick={() => logout()}
+                    isLoading={fetching}
+                    colorScheme="pink"
+                    variant="link"
+                >
                     Log out
                 </Button>
             </Flex>

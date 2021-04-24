@@ -1,8 +1,18 @@
-import argon2 from "argon2";
-import { Arg, Ctx, Field, InputType, Mutation, ObjectType, Query, Resolver } from "type-graphql";
-import { MyContext } from "src/types";
-import { User } from "../entities";
-import { validateRegister } from "../utils/validateRegister";
+import argon2 from 'argon2';
+import {
+    Arg,
+    Ctx,
+    Field,
+    InputType,
+    Mutation,
+    ObjectType,
+    Query,
+    Resolver,
+} from 'type-graphql';
+import { MyContext } from 'src/types';
+import { User } from '../entities';
+import { validateRegister } from '../utils/validateRegister';
+import { COOKIE_NAME } from '../consts';
 
 @InputType()
 export class UsernamePasswordInput {
@@ -105,6 +115,19 @@ export class UserResolver {
         return {
             user,
         };
+    }
+    @Mutation(() => Boolean)
+    async logout(@Ctx() { req, res }: MyContext): Promise<boolean> {
+        return new Promise((resolve) =>
+            req.session.destroy((err: any) => {
+                res.clearCookie(COOKIE_NAME);
+                if (err) {
+                    resolve(false);
+                    return;
+                }
+                resolve(true);
+            })
+        );
     }
 
     @Query(() => User, { nullable: true })

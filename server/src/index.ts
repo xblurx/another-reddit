@@ -9,7 +9,7 @@ import connectRedis from 'connect-redis';
 import { ApolloServer } from 'apollo-server-express';
 import { buildSchema } from 'type-graphql';
 import { PostResolver, UserResolver } from './resolvers';
-import { __prod__ } from './consts';
+import { __prod__, COOKIE_NAME } from "./consts";
 import { MyContext } from './types';
 
 const main = async () => {
@@ -29,7 +29,7 @@ const main = async () => {
     );
     app.use(
         session({
-            name: 'qid',
+            name: COOKIE_NAME,
             store: new RedisStore({
                 client: redisClient,
                 disableTouch: true,
