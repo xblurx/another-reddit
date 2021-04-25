@@ -19,6 +19,8 @@ export class UsernamePasswordInput {
     @Field()
     username: string;
     @Field()
+    email: string;
+    @Field()
     password: string;
 }
 
@@ -34,6 +36,7 @@ export class FieldError {
 class UserResponse {
     @Field(() => [FieldError], { nullable: true })
     errors?: FieldError[];
+
     @Field(() => User, { nullable: true })
     user?: User;
 }
@@ -56,6 +59,7 @@ export class UserResolver {
         const hashedPassword = await argon2.hash(options.password);
         const user = em.create(User, {
             username: options.username,
+            email: options.email,
             password: hashedPassword,
         });
         try {
@@ -79,12 +83,16 @@ export class UserResolver {
 
     @Mutation(() => UserResponse)
     async login(
-        @Arg('options') options: UsernamePasswordInput,
+        @Arg('usernameOrEmail') usernameOrEmail: string,
+        @Arg('password') password: string,
         @Ctx() { em, req }: MyContext
     ): Promise<UserResponse> {
-        const user = await em.findOne(User, {
-            username: options.username,
-        });
+        const findBy = usernameOrEmail.includes('@')
+            ? { email: usernameOrEmail }
+            : { username: usernameOrEmail };
+
+        const user = await em.findOne(User, findBy);
+
         if (!user) {
             return {
                 errors: [
@@ -98,7 +106,7 @@ export class UserResolver {
 
         const passwordsMatch = await argon2.verify(
             user.password,
-            options.password
+            password
         );
         if (!passwordsMatch) {
             return {
@@ -116,6 +124,7 @@ export class UserResolver {
             user,
         };
     }
+
     @Mutation(() => Boolean)
     async logout(@Ctx() { req, res }: MyContext): Promise<boolean> {
         return new Promise((resolve) =>

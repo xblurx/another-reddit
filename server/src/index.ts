@@ -9,7 +9,7 @@ import connectRedis from 'connect-redis';
 import { ApolloServer } from 'apollo-server-express';
 import { buildSchema } from 'type-graphql';
 import { PostResolver, UserResolver } from './resolvers';
-import { __prod__, COOKIE_NAME } from "./consts";
+import { __prod__, COOKIE_NAME } from './consts';
 import { MyContext } from './types';
 
 const main = async () => {
@@ -63,6 +63,7 @@ const main = async () => {
         console.log('server started on localhost:2000');
     });
 };
+
 try {
     main();
 } catch (e) {

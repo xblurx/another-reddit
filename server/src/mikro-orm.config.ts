@@ -12,7 +12,7 @@ const config: Options = {
     password: 'postgres',
     migrations: {
         path: path.join(__dirname, './migrations'),
-        pattern: /^[\w-]+\d+\.[tj]s$/, // re
+        pattern: /^[\w-]+\d+\.[tj]s$/,
     },
 };
 
