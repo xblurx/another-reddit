@@ -56,7 +56,7 @@ const Navbar = () => {
                 <Box p="2">
                     <Heading size="md">
                         <Link as={NextLink} href="/">
-                            Re[d/d]it
+                            Re[dd]it
                         </Link>
                     </Heading>
                 </Box>

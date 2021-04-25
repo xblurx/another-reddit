@@ -1,17 +1,14 @@
-import React from "react";
-import { useForm } from "react-hook-form";
-import { useRouter } from "next/router";
-import { Button, Stack, VStack } from "@chakra-ui/react";
-import { iRegister } from "../types";
-import { Wrapper } from "../components/Wrapper";
-import { InputField } from "../components/InputField";
-import { useRegisterMutation } from "../generated/graphql";
-import { createUrqlClient } from "../utils/createUrqlClient";
-import { withUrqlClient } from "next-urql";
+import React from 'react';
+import { useForm } from 'react-hook-form';
+import { useRouter } from 'next/router';
+import { Button, Stack, VStack } from '@chakra-ui/react';
+import { iRegister } from '../types';
+import { Wrapper, InputField } from 'components';
+import { useRegisterMutation } from '../generated/graphql';
+import { createUrqlClient } from '../utils/createUrqlClient';
+import { withUrqlClient } from 'next-urql';
 
-interface RegisterProps {}
-
-const Register = (props: RegisterProps) => {
+const Register = () => {
     const router = useRouter();
     const [, register] = useRegisterMutation();
     const {
@@ -22,7 +19,7 @@ const Register = (props: RegisterProps) => {
     } = useForm<iRegister>();
 
     const onSubmit = handleSubmit(async (formData) => {
-        const response = await register(formData);
+        const response = await register({ options: formData });
         if (response.data?.register.errors) {
             const errors = response.data.register.errors;
             errors.forEach(({ field: name, message }) => {
@@ -42,6 +39,21 @@ const Register = (props: RegisterProps) => {
                         register={reg('username', { required: true })}
                         name="username"
                         placeholder="username"
+                    />
+
+                    <InputField
+                        errors={errors.email}
+                        register={reg('email', {
+                            required: 'required',
+                            pattern: {
+                                value: /\S+@\S+.\S+/,
+                                message:
+                                    'Entered value does not match email format',
+                            },
+                        })}
+                        name="email"
+                        placeholder="email"
+                        type="email"
                     />
 
                     <InputField

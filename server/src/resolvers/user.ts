@@ -12,7 +12,9 @@ import {
 import { MyContext } from 'src/types';
 import { User } from '../entities';
 import { validateRegister } from '../utils/validateRegister';
-import { COOKIE_NAME } from '../consts';
+import { COOKIE_NAME, FORGOT_PASSWORD_PREFIX, SITE_URL } from '../consts';
+import { v4 } from 'uuid';
+import { sendEmail } from '../utils/sendEmail';
 
 @InputType()
 export class UsernamePasswordInput {
@@ -65,6 +67,7 @@ export class UserResolver {
         try {
             await em.persistAndFlush(user);
         } catch (e) {
+            console.log(`\nError: ${e}\n`);
             return {
                 errors: [
                     {
@@ -97,17 +100,14 @@ export class UserResolver {
             return {
                 errors: [
                     {
-                        field: 'username',
+                        field: 'usernameOrEmail',
                         message: 'User does not exist',
                     },
                 ],
             };
         }
 
-        const passwordsMatch = await argon2.verify(
-            user.password,
-            password
-        );
+        const passwordsMatch = await argon2.verify(user.password, password);
         if (!passwordsMatch) {
             return {
                 errors: [
@@ -137,6 +137,65 @@ export class UserResolver {
                 resolve(true);
             })
         );
+    }
+
+    @Mutation(() => Boolean)
+    async forgotPassword(
+        @Arg('email') email: string,
+        @Ctx() { em, redis }: MyContext
+    ): Promise<boolean> {
+        const user = await em.findOne(User, { email });
+        if (!user) {
+            return true;
+        }
+
+        const token = v4();
+        await redis.set(
+            FORGOT_PASSWORD_PREFIX + token,
+            user.id,
+            'ex',
+            1000 * 60 * 10
+        );
+        const text = `<a href=${
+            SITE_URL + `/reset-password/${token}`
+        }>Reset password</a>`;
+        await sendEmail(email, text);
+        return true;
+    }
+
+    @Mutation(() => UserResponse)
+    async changePassword(
+        @Arg('token') token: string,
+        @Arg('newPassword') newPassword: string,
+        @Ctx() { em, redis }: MyContext
+    ): Promise<UserResponse> {
+        const userId = await redis.get(FORGOT_PASSWORD_PREFIX + token);
+        if (!userId) {
+            return {
+                errors: [
+                    {
+                        field: 'token',
+                        message: 'token is expired',
+                    },
+                ],
+            };
+        }
+
+        const user = await em.findOne(User, { id: parseInt(userId) });
+        if (!user) {
+            return {
+                errors: [
+                    {
+                        field: 'token',
+                        message: 'user no longer exists',
+                    },
+                ],
+            };
+        }
+
+        user.password = await argon2.hash(newPassword);
+        await em.persistAndFlush(user);
+        return { user };
     }
 
     @Query(() => User, { nullable: true })

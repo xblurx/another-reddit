@@ -1,4 +1,10 @@
 export interface iRegister {
-  username: string;
-  password: string;
+    username: string;
+    email: string;
+    password: string;
+}
+
+export interface iLogin {
+    usernameOrEmail: string;
+    password: string;
 }

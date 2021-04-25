@@ -2,13 +2,13 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/router';
 import { Button, Stack, VStack } from '@chakra-ui/react';
-import { Wrapper, InputField } from 'components';
-import { iRegister } from '../types';
+import { InputField, Wrapper } from 'components';
 import { useLoginMutation } from '../generated/graphql';
+import { iLogin } from 'types';
+import { createUrqlClient } from "../utils/createUrqlClient";
+import { withUrqlClient } from "next-urql";
 
-interface RegisterProps {}
-
-const Login = (props: RegisterProps) => {
+const Login = () => {
     const router = useRouter();
     const [, login] = useLoginMutation();
     const {
@@ -16,14 +16,14 @@ const Login = (props: RegisterProps) => {
         handleSubmit,
         setError,
         formState: { errors, isSubmitting },
-    } = useForm<iRegister>();
+    } = useForm<iLogin>();
 
     const onSubmit = handleSubmit(async (formData) => {
-        const response = await login({ options: formData });
+        const response = await login(formData);
         if (response.data?.login.errors) {
             const errors = response.data.login.errors;
             errors.forEach(({ field: name, message }) => {
-                setError(name as 'username' | 'password', { message });
+                setError(name as 'usernameOrEmail' | 'password', { message });
             });
             return;
         }
@@ -35,17 +35,17 @@ const Login = (props: RegisterProps) => {
             <form onSubmit={onSubmit}>
                 <VStack mt={5} spacing={10}>
                     <InputField
-                        errors={errors.username}
-                        register={reg('username', { required: true })}
-                        name="username"
-                        placeholder="username"
+                        errors={errors.usernameOrEmail}
+                        register={reg('usernameOrEmail', { required: true })}
+                        name="usernameOrEmail"
+                        placeholder="username or email"
                     />
 
                     <InputField
                         errors={errors.password}
                         register={reg('password', { required: true })}
                         name="password"
-                        placeholder="Password"
+                        placeholder="password"
                         type="password"
                     />
 
@@ -68,4 +68,4 @@ const Login = (props: RegisterProps) => {
     );
 };
 
-export default Login;
+export default withUrqlClient(createUrqlClient)( Login)

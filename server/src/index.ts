@@ -4,7 +4,7 @@ import microConf from './mikro-orm.config';
 import express from 'express';
 import session from 'express-session';
 import cors from 'cors';
-import redis from 'redis';
+import Redis from 'ioredis';
 import connectRedis from 'connect-redis';
 import { ApolloServer } from 'apollo-server-express';
 import { buildSchema } from 'type-graphql';
@@ -19,7 +19,7 @@ const main = async () => {
     const app = express();
 
     const RedisStore = connectRedis(session);
-    const redisClient = redis.createClient();
+    const redis = new Redis();
 
     app.use(
         cors({
@@ -31,7 +31,7 @@ const main = async () => {
         session({
             name: COOKIE_NAME,
             store: new RedisStore({
-                client: redisClient,
+                client: redis,
                 disableTouch: true,
             }),
             cookie: {
@@ -56,6 +56,7 @@ const main = async () => {
             em: orm.em,
             res,
             req,
+            redis,
         }),
     });
     apolloServer.applyMiddleware({ app, cors: false });
