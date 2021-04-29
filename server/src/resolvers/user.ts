@@ -67,7 +67,6 @@ export class UserResolver {
         try {
             await em.persistAndFlush(user);
         } catch (e) {
-            console.log(`\nError: ${e}\n`);
             return {
                 errors: [
                     {
@@ -145,6 +144,7 @@ export class UserResolver {
         @Ctx() { em, redis }: MyContext
     ): Promise<boolean> {
         const user = await em.findOne(User, { email });
+        console.log(`user resolver forgotPassword user: ${user}`);
         if (!user) {
             return true;
         }
@@ -169,7 +169,8 @@ export class UserResolver {
         @Arg('newPassword') newPassword: string,
         @Ctx() { em, redis }: MyContext
     ): Promise<UserResponse> {
-        const userId = await redis.get(FORGOT_PASSWORD_PREFIX + token);
+        const key = FORGOT_PASSWORD_PREFIX + token;
+        const userId = await redis.get(key);
         if (!userId) {
             return {
                 errors: [
@@ -195,6 +196,7 @@ export class UserResolver {
 
         user.password = await argon2.hash(newPassword);
         await em.persistAndFlush(user);
+        await redis.del(key);
         return { user };
     }
 
