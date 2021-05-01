@@ -1,21 +1,18 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/router";
-import { Button, Checkbox, Flex } from "@chakra-ui/react";
+import { Button, Flex, Link } from "@chakra-ui/react";
 import { InputField, Wrapper } from "components";
-import { useForgotPasswordMutation, useLoginMutation } from "../generated/graphql";
+import { useLoginMutation } from "../generated/graphql";
 import { iLogin } from "types";
 import { createUrqlClient } from "../utils/createUrqlClient";
 import { withUrqlClient } from "next-urql";
+import NextLink from "next/link";
 
 const Login = () => {
-    const [isForgotPassword, setIsForgotPassword] = useState(false);
     const router = useRouter();
     const [, login] = useLoginMutation();
-    const [, forgotPassword] = useForgotPasswordMutation();
     const {
-        trigger,
-        getValues,
         register: reg,
         handleSubmit,
         setError,
@@ -24,13 +21,6 @@ const Login = () => {
         mode: 'onBlur',
         reValidateMode: 'onChange',
     });
-
-    const validateEmail = (value: string) => {
-        if (!/^.+@.+\.com/.test(value)) {
-            return 'email invalid';
-        }
-        return true;
-    };
 
     const onSubmit = handleSubmit(async (formData) => {
         const response = await login(formData);
@@ -44,28 +34,14 @@ const Login = () => {
         await router.push('/');
     });
 
-    const handleCheckboxChange = () => {
-        trigger('usernameOrEmail');
-        setIsForgotPassword(!isForgotPassword);
-    };
-
-    useEffect(() => {
-        console.log(`isforgotpass: ${isForgotPassword}`);
-    }, [isForgotPassword]);
-
     return (
         <Wrapper variant="small">
             <form onSubmit={onSubmit}>
                 <InputField
                     errors={errors.usernameOrEmail}
-                    register={reg(
-                        'usernameOrEmail',
-                        isForgotPassword
-                            ? {
-                                  validate: validateEmail,
-                              }
-                            : { required: 'field is required'}
-                    )}
+                    register={reg('usernameOrEmail', {
+                        required: 'field is required',
+                    })}
                     name="usernameOrEmail"
                     placeholder="username or email"
                 />
@@ -73,7 +49,7 @@ const Login = () => {
                 <InputField
                     errors={errors.password}
                     register={reg('password', {
-                        required: 'the field is required',
+                        required: 'field is required',
                     })}
                     name="password"
                     placeholder="password"
@@ -81,13 +57,16 @@ const Login = () => {
                 />
 
                 <Flex mt={4}>
-                    <Checkbox
-                        isChecked={isForgotPassword}
-                        onChange={handleCheckboxChange}
-                        colorScheme="red"
-                    >
-                        Forgot password?
-                    </Checkbox>
+                    <NextLink href="/forgot-password">
+                        <Link
+                            _hover={{
+                                background: 'white',
+                                color: 'purple.500',
+                            }}
+                        >
+                            Forgot password?
+                        </Link>
+                    </NextLink>
                 </Flex>
 
                 <Flex mt={5} justify="space-around">
@@ -102,23 +81,6 @@ const Login = () => {
                     >
                         Log in
                     </Button>
-                    {isForgotPassword && (
-                        <Button
-                            colorScheme="red"
-                            variant="outline"
-                            borderRadius="50px"
-                            width="150px"
-                            onClick={() => {
-                                !errors.usernameOrEmail
-                                    ? forgotPassword({
-                                          email: getValues('usernameOrEmail'),
-                                      })
-                                    : undefined;
-                            }}
-                        >
-                            Reset password
-                        </Button>
-                    )}
                 </Flex>
             </form>
         </Wrapper>

@@ -1,20 +1,21 @@
-import 'reflect-metadata';
-import { MikroORM } from '@mikro-orm/core';
-import microConf from './mikro-orm.config';
-import express from 'express';
-import session from 'express-session';
-import cors from 'cors';
-import Redis from 'ioredis';
-import connectRedis from 'connect-redis';
-import { ApolloServer } from 'apollo-server-express';
-import { buildSchema } from 'type-graphql';
-import { PostResolver, UserResolver } from './resolvers';
-import { __prod__, COOKIE_NAME } from './consts';
-import { MyContext } from './types';
+import "reflect-metadata";
+import express from "express";
+import session from "express-session";
+import cors from "cors";
+import Redis from "ioredis";
+import connectRedis from "connect-redis";
+import { ApolloServer } from "apollo-server-express";
+import { buildSchema } from "type-graphql";
+import { PostResolver, UserResolver } from "./resolvers";
+import { __prod__, COOKIE_NAME } from "./consts";
+import { MyContext } from "./types";
+import { createConnection } from "typeorm";
+import dotenv from "dotenv";
+
+dotenv.config()
 
 const main = async () => {
-    const orm = await MikroORM.init(microConf);
-    await orm.getMigrator().up();
+    await createConnection()
 
     const app = express();
 
@@ -53,7 +54,6 @@ const main = async () => {
             validate: false,
         }),
         context: ({ req, res }): MyContext => ({
-            em: orm.em,
             res,
             req,
             redis,
