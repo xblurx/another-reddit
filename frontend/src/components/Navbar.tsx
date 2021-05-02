@@ -52,7 +52,7 @@ const Navbar = () => {
 
     return (
         <>
-            <Flex p={6}>
+            <Flex position="sticky" top={0} zIndex={1} p={6}>
                 <Box p="2">
                     <Heading size="md">
                         <Link as={NextLink} href="/">
@@ -61,7 +61,7 @@ const Navbar = () => {
                     </Heading>
                 </Box>
                 <Spacer />
-                <Flex align="baseline" justify="space-between">
+                <Flex p={2} align="baseline" justify="space-between">
                     {body}
                 </Flex>
             </Flex>

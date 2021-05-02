@@ -1,13 +1,13 @@
-import React from "react";
-import { useForm } from "react-hook-form";
-import { useRouter } from "next/router";
-import { Button, Flex, Link } from "@chakra-ui/react";
-import { InputField, Wrapper } from "components";
-import { useLoginMutation } from "../generated/graphql";
-import { iLogin } from "types";
-import { createUrqlClient } from "../utils/createUrqlClient";
-import { withUrqlClient } from "next-urql";
-import NextLink from "next/link";
+import React from 'react';
+import { useForm } from 'react-hook-form';
+import { useRouter } from 'next/router';
+import { Button, Flex, Link } from '@chakra-ui/react';
+import { InputField, Wrapper } from 'components';
+import { useLoginMutation } from '../generated/graphql';
+import { iLogin } from 'types';
+import { createUrqlClient } from '../utils/createUrqlClient';
+import { withUrqlClient } from 'next-urql';
+import NextLink from 'next/link';
 
 const Login = () => {
     const router = useRouter();
@@ -31,7 +31,7 @@ const Login = () => {
             });
             return;
         }
-        await router.push('/');
+        await router.push((router.query.next as string) ?? '/');
     });
 
     return (

@@ -13,7 +13,7 @@ interface iChangePassword {
     newPassword: string;
 }
 
-const ChangePassword: NextPage<{ token: string }> = ({ token }) => {
+const ChangePassword = () => {
     const [tokenError, setTokenError] = useState('');
     const router = useRouter();
     const [, changePassword] = useChangePasswordMutation();
@@ -26,7 +26,7 @@ const ChangePassword: NextPage<{ token: string }> = ({ token }) => {
 
     const onSubmit = handleSubmit(async (formData) => {
         const response = await changePassword({
-            token,
+            token: (router.query.token as string) ?? '',
             newPassword: formData.newPassword,
         });
         if (response.data?.changePassword.errors) {
@@ -78,12 +78,6 @@ const ChangePassword: NextPage<{ token: string }> = ({ token }) => {
             </form>
         </Wrapper>
     );
-};
-
-ChangePassword.getInitialProps = ({ query }) => {
-    return {
-        token: query.token as string,
-    };
 };
 
 export default withUrqlClient(createUrqlClient)(ChangePassword);
