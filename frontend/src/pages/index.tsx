@@ -1,24 +1,42 @@
 import React from 'react';
-import Navbar from '../components/Navbar';
-import { Box, Center, Heading, Spinner, Text } from '@chakra-ui/react';
+import { Box, Button, Center, Heading, VStack } from '@chakra-ui/react';
 import { withUrqlClient } from 'next-urql';
 import { createUrqlClient } from '../utils/createUrqlClient';
 import { usePostsQuery } from '../generated/graphql';
+import { Card, Layout } from 'components';
+import { useRouter } from 'next/router';
 
 const Index = () => {
-    const [{ fetching, data }] = usePostsQuery();
+    const router = useRouter();
+    const [{ fetching, data }] = usePostsQuery({
+        variables: {
+            limit: 10,
+        },
+    });
     const posts = data
-        ? data.posts.map((p) => <Text key={p.id}>{p.title}</Text>)
+        ? data.posts.map((p) => (
+              <Card
+                  key={p.title}
+                  loading={fetching}
+                  title={p.title}
+                  text={p.text}
+                  author={p.creator.username}
+              />
+          ))
         : null;
 
     return (
-        <>
-            <Navbar />
-            <Center mt="30vh">
+        <Layout>
+            <Center>
                 <Heading> hello world</Heading>
+                <Button onClick={() => router.push('/create-post')}>
+                    Create post
+                </Button>
             </Center>
-            <Box p={5}>{fetching ? <Spinner /> : posts}</Box>
-        </>
+            <Box p={5}>
+                <VStack spacing={8}>{posts}</VStack>
+            </Box>
+        </Layout>
     );
 };
 

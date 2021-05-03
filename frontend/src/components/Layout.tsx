@@ -3,15 +3,17 @@ import { Wrapper, WrapperVariantT } from './Wrapper';
 import Navbar from './Navbar';
 
 interface LayoutProps {
-    variant: WrapperVariantT;
+    variant?: WrapperVariantT;
     children: React.ReactNode;
 }
 
-export const Layout = (props: LayoutProps) => {
+export const Layout = ({ variant, children, ...rest }: LayoutProps) => {
     return (
         <>
             <Navbar />
-            <Wrapper variant={props.variant}>{props.children}</Wrapper>
+            <Wrapper variant={variant} {...rest}>
+                {children}
+            </Wrapper>
         </>
     );
 };

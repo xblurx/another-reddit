@@ -3,11 +3,13 @@ import {
     Arg,
     Ctx,
     Field,
+    FieldResolver,
     InputType,
     Mutation,
     ObjectType,
     Query,
     Resolver,
+    Root,
 } from 'type-graphql';
 import { MyContext } from 'src/types';
 import { User } from '../entities';
@@ -43,8 +45,13 @@ class UserResponse {
     user?: User;
 }
 
-@Resolver()
+@Resolver(User)
 export class UserResolver {
+    @FieldResolver(() => String)
+    email(@Root() user: User, @Ctx() { req }: MyContext) {
+        return req.session.userId === user.id ? user.email : '';
+    }
+
     @Query(() => [User], { nullable: true })
     users(): Promise<User[]> {
         return User.find();
@@ -68,7 +75,6 @@ export class UserResolver {
                 password: hashedPassword,
             }).save();
         } catch (e) {
-            console.log(e.message);
             return {
                 errors: [
                     {

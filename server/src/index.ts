@@ -1,21 +1,22 @@
-import "reflect-metadata";
-import express from "express";
-import session from "express-session";
-import cors from "cors";
-import Redis from "ioredis";
-import connectRedis from "connect-redis";
-import { ApolloServer } from "apollo-server-express";
-import { buildSchema } from "type-graphql";
-import { PostResolver, UserResolver } from "./resolvers";
-import { __prod__, COOKIE_NAME } from "./consts";
-import { MyContext } from "./types";
-import { createConnection } from "typeorm";
-import dotenv from "dotenv";
+import 'reflect-metadata';
+import express from 'express';
+import session from 'express-session';
+import cors from 'cors';
+import Redis from 'ioredis';
+import connectRedis from 'connect-redis';
+import { ApolloServer } from 'apollo-server-express';
+import { buildSchema } from 'type-graphql';
+import { PostResolver, UserResolver } from './resolvers';
+import { __prod__, COOKIE_NAME } from './consts';
+import { MyContext } from './types';
+import { createConnection } from 'typeorm';
+import dotenv from 'dotenv';
 
-dotenv.config()
+dotenv.config();
 
 const main = async () => {
-    await createConnection()
+    await createConnection();
+    // await conn.runMigrations();
 
     const app = express();
 

@@ -1,6 +1,12 @@
-import { Cache, cacheExchange, QueryInput } from "@urql/exchange-graphcache";
-import { dedupExchange, fetchExchange } from "urql";
-import { LoginMutation, LogoutMutation, MeDocument, MeQuery, RegisterMutation } from "../generated/graphql";
+import { Cache, cacheExchange, QueryInput } from '@urql/exchange-graphcache';
+import { dedupExchange, fetchExchange } from 'urql';
+import {
+    LoginMutation,
+    LogoutMutation,
+    MeDocument,
+    MeQuery,
+    RegisterMutation,
+} from '../generated/graphql';
 
 function betterUpdateQuery<Result, Query>(
     cache: Cache,
@@ -21,7 +27,22 @@ export const createUrqlClient = (ssrExchange: any) => ({
         cacheExchange({
             updates: {
                 Mutation: {
-                    login: (_result: any, args: any, cache: Cache, info: any)  => {
+                    createPost: (
+                        _result: any,
+                        args: any,
+                        cache: Cache,
+                        info: any
+                    ) => {
+                        cache.invalidate('Query', 'posts', {
+                            limit: 10,
+                        });
+                    },
+                    login: (
+                        _result: any,
+                        args: any,
+                        cache: Cache,
+                        info: any
+                    ) => {
                         betterUpdateQuery<LoginMutation, MeQuery>(
                             cache,
                             { query: MeDocument },
@@ -36,7 +57,12 @@ export const createUrqlClient = (ssrExchange: any) => ({
                             }
                         );
                     },
-                    register: (_result: any, args: any, cache: Cache, info: any) => {
+                    register: (
+                        _result: any,
+                        args: any,
+                        cache: Cache,
+                        info: any
+                    ) => {
                         betterUpdateQuery<RegisterMutation, MeQuery>(
                             cache,
                             { query: MeDocument },
@@ -51,7 +77,12 @@ export const createUrqlClient = (ssrExchange: any) => ({
                             }
                         );
                     },
-                    logout: (_result: any, args: any, cache: Cache, info: any) => {
+                    logout: (
+                        _result: any,
+                        args: any,
+                        cache: Cache,
+                        info: any
+                    ) => {
                         betterUpdateQuery<LogoutMutation, MeQuery>(
                             cache,
                             { query: MeDocument },

@@ -19,7 +19,6 @@ export const Wrapper = ({
             maxW={variant === 'regular' ? '700px' : '400px'}
             w="100%"
             {...rest}
-            style={{ marginTop: '30vh' }}
         >
             {children}
         </Box>

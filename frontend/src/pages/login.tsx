@@ -2,7 +2,7 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/router';
 import { Button, Flex, Link } from '@chakra-ui/react';
-import { InputField, Wrapper } from 'components';
+import { InputField, Layout, Wrapper } from "components";
 import { useLoginMutation } from '../generated/graphql';
 import { iLogin } from 'types';
 import { createUrqlClient } from '../utils/createUrqlClient';
@@ -35,7 +35,7 @@ const Login = () => {
     });
 
     return (
-        <Wrapper variant="small">
+        <Layout variant="small">
             <form onSubmit={onSubmit}>
                 <InputField
                     errors={errors.usernameOrEmail}
@@ -83,7 +83,7 @@ const Login = () => {
                     </Button>
                 </Flex>
             </form>
-        </Wrapper>
+        </Layout>
     );
 };
 
