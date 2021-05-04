@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+import 'dotenv-safe/config';
 import express from 'express';
 import session from 'express-session';
 import cors from 'cors';
@@ -11,6 +12,7 @@ import { __prod__, COOKIE_NAME } from './consts';
 import { MyContext } from './types';
 import { createConnection } from 'typeorm';
 import dotenv from 'dotenv';
+import { createUserLoader } from './utils/createUserLoader';
 
 dotenv.config();
 
@@ -21,11 +23,11 @@ const main = async () => {
     const app = express();
 
     const RedisStore = connectRedis(session);
-    const redis = new Redis();
+    const redis = new Redis(process.env.REDIS_URL);
 
     app.use(
         cors({
-            origin: 'http://localhost:3000',
+            origin: process.env.CORS_ORIGIN,
             credentials: true,
         })
     );
@@ -42,7 +44,7 @@ const main = async () => {
                 secure: __prod__,
                 sameSite: 'lax',
             },
-            secret: 'todo env_var',
+            secret: process.env.SESSION_SECRET,
             resave: false,
             saveUninitialized: false,
         })
@@ -58,11 +60,12 @@ const main = async () => {
             res,
             req,
             redis,
+            userLoader: createUserLoader(),
         }),
     });
     apolloServer.applyMiddleware({ app, cors: false });
-    app.listen(2000, () => {
-        console.log('server started on localhost:2000');
+    app.listen(parseInt(process.env.PORT), () => {
+        console.log(`server started on localhost:${process.env.PORT}`);
     });
 };
 

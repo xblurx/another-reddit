@@ -1,9 +1,21 @@
-import { Arg, Ctx, Field, InputType, Int, Mutation, Query, Resolver, UseMiddleware } from "type-graphql";
-import { Post } from "../entities";
-import { MyContext } from "../types";
-import { isAuth } from "../middleware/isAuth";
-import { getConnection } from "typeorm";
-import { Upvote } from "../entities/Upvote";
+import {
+    Arg,
+    Ctx,
+    Field,
+    FieldResolver,
+    InputType,
+    Int,
+    Mutation,
+    Query,
+    Resolver,
+    Root,
+    UseMiddleware,
+} from 'type-graphql';
+import { Post, User } from '../entities';
+import { MyContext } from '../types';
+import { isAuth } from '../middleware/isAuth';
+import { getConnection } from 'typeorm';
+import { Upvote } from '../entities/Upvote';
 
 @InputType()
 class PostInput {
@@ -15,6 +27,11 @@ class PostInput {
 
 @Resolver(Post)
 export class PostResolver {
+    @FieldResolver(() => User)
+    creator(@Root() post: Post, @Ctx() { userLoader }: MyContext) {
+        return userLoader.load(post.creatorId);
+    }
+
     @Query(() => [Post])
     async posts(
         @Arg('limit', () => Int) limit: number,
@@ -27,56 +44,21 @@ export class PostResolver {
             replacements.push(new Date(parseInt(cursor)));
         }
 
-        //     const posts = await getConnection().query(
-        // `
-        //     select p.*
-        //     from post p
-        //     ${cursor ? `where p."createdAt" < $2` : ''}
-        //     order by p."createdAt" DESC
-        //     limit $1
-        //     `,
-        //     replacements
-        //     );
-
-        const posts = await getConnection().query(
+        return await getConnection().query(
             `
-            select p.*,
-            json_build_object(
-            'id', u.id,
-            'username', u.username,
-            'email', u.email
-            ) creator
+            select p.*
             from post p
-            inner join public.user u on u.id = p."creatorId"
             ${cursor ? `where p."createdAt" < $2` : ''}
             order by p."createdAt" DESC
             limit $1
             `,
             replacements
         );
-
-        return posts;
-
-        //     const qb = getConnection()
-        //         .getRepository(Post)
-        //         .createQueryBuilder('p')
-        //         .innerJoinAndSelect('p.creator', 'u', 'u.id = p."creatorId"', {
-        //             isRemoved: false,
-        //         })
-        //         .orderBy('p."createdAt"', 'DESC')
-        //         .take(realLimit);
-        //
-        //     if (cursor) {
-        //         qb.where('p."createdAt" < :cursor', {
-        //             cursor: new Date(parseInt(cursor)),
-        //         });
-        //     }
-        //     return qb.getMany();
     }
 
     @Query(() => Post, { nullable: true })
     async post(@Arg('id', () => Int) id: number): Promise<Post | undefined> {
-        return Post.findOne(id, { relations: ['creator'] });
+        return Post.findOne(id);
     }
 
     @Mutation(() => Post)
