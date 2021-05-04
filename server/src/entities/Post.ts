@@ -1,13 +1,6 @@
-import { Field, ObjectType } from 'type-graphql';
-import {
-    BaseEntity,
-    Column,
-    CreateDateColumn,
-    Entity,
-    ManyToOne, OneToMany,
-    PrimaryGeneratedColumn
-} from "typeorm";
-import { User } from './User';
+import { Field, ObjectType } from "type-graphql";
+import { BaseEntity, Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { User } from "./User";
 import { Upvote } from "./Upvote";
 
 @ObjectType()

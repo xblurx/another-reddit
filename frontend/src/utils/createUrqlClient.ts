@@ -27,12 +27,12 @@ export const createUrqlClient = (ssrExchange: any) => ({
         cacheExchange({
             updates: {
                 Mutation: {
-                    createPost: (
-                        _result: any,
-                        args: any,
-                        cache: Cache,
-                        info: any
-                    ) => {
+                    createPost: (_result: any, args: any, cache: Cache) => {
+                        cache.invalidate('Query', 'posts', {
+                            limit: 10,
+                        });
+                    },
+                    upvote: (_result: any, args: any, cache: Cache) => {
                         cache.invalidate('Query', 'posts', {
                             limit: 10,
                         });

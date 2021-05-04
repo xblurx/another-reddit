@@ -1,5 +1,12 @@
 import React from 'react';
-import { Box, Button, Center, Heading, VStack } from '@chakra-ui/react';
+import {
+    Box,
+    Button,
+    Center,
+    Heading,
+    Spinner,
+    VStack,
+} from '@chakra-ui/react';
 import { withUrqlClient } from 'next-urql';
 import { createUrqlClient } from '../utils/createUrqlClient';
 import { usePostsQuery } from '../generated/graphql';
@@ -13,15 +20,10 @@ const Index = () => {
             limit: 10,
         },
     });
+
     const posts = data
         ? data.posts.map((p) => (
-              <Card
-                  key={p.title}
-                  loading={fetching}
-                  title={p.title}
-                  text={p.text}
-                  author={p.creator.username}
-              />
+              <Card key={p.title} loading={fetching} post={p} />
           ))
         : null;
 

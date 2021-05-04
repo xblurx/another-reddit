@@ -3,6 +3,7 @@ import { Post } from "../entities";
 import { MyContext } from "../types";
 import { isAuth } from "../middleware/isAuth";
 import { getConnection } from "typeorm";
+import { Upvote } from "../entities/Upvote";
 
 @InputType()
 class PostInput {
@@ -74,8 +75,8 @@ export class PostResolver {
     }
 
     @Query(() => Post, { nullable: true })
-    async post(@Arg('id') id: number): Promise<Post | undefined> {
-        return Post.findOne(id);
+    async post(@Arg('id', () => Int) id: number): Promise<Post | undefined> {
+        return Post.findOne(id, { relations: ['creator'] });
     }
 
     @Mutation(() => Post)
@@ -88,55 +89,97 @@ export class PostResolver {
     }
 
     @Mutation(() => Post, { nullable: true })
+    @UseMiddleware(isAuth)
     async updatePost(
         @Arg('id') id: number,
-        @Arg('title', () => String, { nullable: true }) title: string
+        @Arg('title') title: string,
+        @Arg('text') text: string,
+        @Ctx() { req }: MyContext
     ): Promise<Post | null> {
-        const post = await Post.findOne(id);
-        if (!post) {
-            return null;
-        }
-        if (typeof title !== 'undefined') {
-            post.title = title;
-            await Post.update({ id }, { title });
-        }
-        return post;
+        const result = await getConnection()
+            .createQueryBuilder()
+            .update(Post)
+            .set({ title, text })
+            .where('id = :id and "creatorId" = :creatorId', {
+                id,
+                creatorId: req.session.userId,
+            })
+            .returning('*')
+            .execute();
+
+        return result.raw[0];
     }
 
     @Mutation(() => Boolean)
-    async deletePost(@Arg('id') id: number): Promise<boolean> {
-        const deleted = await Post.delete(id);
+    async deletePost(
+        @Arg('id', () => Int) id: number,
+        @Ctx() { req }: MyContext
+    ): Promise<boolean> {
+        const deleted = await Post.delete({
+            id,
+            creatorId: req.session.userId,
+        });
         return !!deleted.affected;
     }
 
     @Mutation(() => Boolean)
-    // @UseMiddleware(isAuth)
+    @UseMiddleware(isAuth)
     async upvote(
         @Arg('postId', () => Int) postId: number,
         @Arg('value', () => Int) value: number,
         @Ctx() { req }: MyContext
     ) {
         const { userId } = req.session;
-        return userId === undefined;
+        const realValue = value === 1 ? 1 : -1;
 
-        const isUpvote = value !== -1;
-        const realValue = isUpvote ? 1 : -1;
-        // await Upvote.insert({
-        //     userId,
-        //     postId,
-        //     value: realValue,
-        // });
-        await getConnection().query(
-            `
-        start transaction;
-        insert into upvote ("userId", "postId", value)
-        values(${userId}, ${postId}, ${realValue});
-        update post 
-        set points = points + ${realValue}
-        where id = ${postId};
-        commit;
-        `
-        );
+        const upvote = await Upvote.findOne({ where: { postId, userId } });
+
+        if (upvote && upvote.value !== realValue) {
+            /**
+             * if the user has voted on post before and changing his vote to opposite
+             */
+            await getConnection().transaction(async (em) => {
+                await em.query(
+                    `
+                update upvote
+                set value = $1
+                where "postId" = $2 and "userId" = $3
+                `,
+                    [realValue, postId, userId]
+                );
+
+                await em.query(
+                    `
+                      update post
+                      set points = points + $1
+                      where id = $2
+                    `,
+                    [realValue, postId]
+                );
+            });
+        } else if (!upvote) {
+            /**
+             * the user never voted before
+             */
+            await getConnection().transaction(async (tm) => {
+                await tm.query(
+                    `
+                        insert into upvote ("userId", "postId", value)
+                        values ($1, $2, $3)
+                        `,
+                    [userId, postId, realValue]
+                );
+
+                await tm.query(
+                    `
+                    update post
+                    set points = points + $1
+                    where id = $2
+                      `,
+                    [realValue, postId]
+                );
+            });
+        }
         return true;
     }
 }

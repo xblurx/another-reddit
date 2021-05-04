@@ -1,6 +1,13 @@
-import { BaseEntity, Column, Entity, ManyToOne, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
-import { User } from "./User";
-import { Post } from "./Post";
+import {
+    BaseEntity,
+    Column,
+    Entity,
+    ManyToOne,
+    PrimaryColumn,
+    PrimaryGeneratedColumn,
+} from 'typeorm';
+import { User } from './User';
+import { Post } from './Post';
 
 @Entity()
 export class Upvote extends BaseEntity {
@@ -19,6 +26,8 @@ export class Upvote extends BaseEntity {
     @PrimaryColumn()
     postId: number;
 
-    @ManyToOne(() => Post, (post) => post.upvotes)
+    @ManyToOne(() => Post, (post) => post.upvotes, {
+        onDelete: 'CASCADE',
+    })
     post: Post;
 }
